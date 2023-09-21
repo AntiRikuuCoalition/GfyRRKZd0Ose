@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>暗号web</title>
+	<style>
+	body {
+		background-color: black;
+		color: white;
+	}
+	input[type="text"],
+	input[type="password"],
+	button {
+		background-color: black;	
+		color: white;
+		border: 1px solid white;
+	}
+	input[type="text"]:focus,
+	input[type="password"]:focus {
+		background-color: white;
+		color: black;
+	}
+	button:hover {
+		background-color: white;
+		color: black;
+	}
+	</style>
+</head>
+
+<body>
+	<h1>暗 号 W E B - DARKver</h1>
+	<form>
+		<label for="message">暗号化するメッセージ:</label>
+		<input type="text" id="message" name="message">
+		<br>
+		<label for="password">パスワード:</label>
+		<input type="password" id="password" name="password">
+		<br>
+		<button type="button" onclick="encrypt()">暗号化</button>
+		<button type="button" onclick="copy()">コピー</button>
+		<button type="button" onclick="decrypt()">複合化</button>
+	</form>
+	<div id="result">
+	</div>
+	<script>
+	function encrypt() {
+			let message = document.getElementById("message").value;
+			let password = document.getElementById("password").value;
+			let encrypted = "";
+			for (let i = 0; i < message.length; i++) {
+				let code = message.charCodeAt(i);
+				let binary = code.toString(2);
+				let paddedBinary = binary.padStart(16, "0");
+				let encryptedBinary = "";
+				for (let j = 0; j < paddedBinary.length; j++) {
+					let ch = paddedBinary.charAt(j);
+					let replaced = "";
+					switch (ch) {
+						case "0":
+							replaced = "\u200C";
+							break;
+						case "1":
+							replaced = "\u2060";
+							break;
+					}
+					encryptedBinary += replaced;
+				}
+				encrypted += encryptedBinary;
+			}
+			document.getElementById("result").innerHTML = "暗号化されたメッセージ: " + encrypted;
+			localStorage.setItem("encrypted", encrypted);
+			localStorage.setItem("password", password);
+			document.getElementById("message").value = "";
+			document.getElementById("password").value = "";
+		}
+
+		function decrypt() {
+			let password = prompt("パスワードを入力してください:");
+			let storedPassword = localStorage.getItem("password");
+			if (password === storedPassword) {
+				let encrypted = localStorage.getItem("encrypted");
+				let len = encrypted.length / 16;
+				let message = "";
+				for (let i = 0; i < len; i++) {
+					let encryptedBinary = encrypted.slice(i * 16, (i + 1) * 16);
+					let decryptedBinary = "";
+					for (let j = 0; j < encryptedBinary.length; j++) {
+						let ch = encryptedBinary.charAt(j);
+						let replaced = "";
+						switch (ch) {
+							case "\u200C":
+								replaced = "0";
+								break;
+							case "\u2060":
+								replaced = "1";
+								break;
+						}
+						decryptedBinary += replaced;
+					}
+					let code = parseInt(decryptedBinary, 2);
+					message += String.fromCharCode(code);
+				}
+				document.getElementById("result").innerHTML = "複合化されたメッセージ: " + message;
+			} else {
+				alert("パスワードが間違っています。");
+			}
+		}
+
+		function copy() {
+			let result = document.getElementById("result").innerHTML;
+			let encrypted = result.replace("暗号化されたメッセージ: ", "");
+			let textarea = document.createElement("textarea");
+			textarea.value = encrypted;
+			document.body.appendChild(textarea);
+			textarea.select();
+			document.execCommand("copy");
+			document.body.removeChild(textarea);
+			alert("コピーされました。");
+		}
+	</script>
+</body>
+
+</html>
